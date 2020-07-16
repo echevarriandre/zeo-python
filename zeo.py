@@ -95,10 +95,7 @@ def searchForFiles(listOfFiles, save, download):
 
 # Verify if the file found is from HorribleSubs
 def isFromHorribleSubs(fileName):
-    if HORRIBLE_SUBS == fileName[:len(HORRIBLE_SUBS)]:
-        return True
-    else: 
-        return False
+    return True if HORRIBLE_SUBS == fileName[:len(HORRIBLE_SUBS)] else False
 
 # Get only the name of the anime and remove all extra stuff
 def getAnimeName(fileName):
