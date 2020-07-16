@@ -64,19 +64,9 @@ def main(args):
     save = config[CONFIG_FOLDER][CONFIG_SAVE]
 
     listOfFiles = os.listdir(download)
-    atLeastOneFileFound = False
-    for e in listOfFiles:
-        fullpath = os.path.join(download, e)
-        if (os.path.isfile(fullpath)) and isAnimeVideo(e):
-            atLeastOneFileFound = True
-            name = getAnimeName(e)
-            createDir(save, name)
-            print('Found anime:', e)
-            os.replace(fullpath, os.path.join(save, name, e))
-        # else if folder starts with [HorribleSubs] it means it is a full season for example
-    
-    if not atLeastOneFileFound:
-        print('No anime found')
+    filesFound = searchForFiles(listOfFiles, save, download)
+
+    if not filesFound: print('No anime found')
 
 def setupArguments():
     parser = argparse.ArgumentParser(fromfile_prefix_chars='@')
@@ -84,8 +74,27 @@ def setupArguments():
     parser.add_argument('-s', '--save', help='Required for the first run. Folder location to save the files')
     return parser.parse_args()
 
-# Verify if the file found is from HorribleSubs and if it 
-def isAnimeVideo(fileName):
+def searchForFiles(listOfFiles, save, download):
+    atLeastOneFileFound = False
+    for e in listOfFiles:
+        fullpath = os.path.join(download, e)
+        if os.path.isfile(fullpath) and isFromHorribleSubs(e):
+            atLeastOneFileFound = True
+            name = getAnimeName(e)
+            createDir(save, name)
+            print('Found anime:', e)
+            os.replace(fullpath, os.path.join(save, name, e))
+        elif isFromHorribleSubs(e):
+            newPath = os.path.join(download, e)
+            listOfFiles = os.listdir(newPath)
+            atLeastOneFileFound = searchForFiles(listOfFiles, save, newPath)
+            if len(os.listdir(newPath)) == 0:
+                os.rmdir(newPath)
+    
+    return atLeastOneFileFound
+
+# Verify if the file found is from HorribleSubs
+def isFromHorribleSubs(fileName):
     if HORRIBLE_SUBS == fileName[:len(HORRIBLE_SUBS)]:
         return True
     else: 
