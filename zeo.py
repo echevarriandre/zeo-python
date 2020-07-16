@@ -1,6 +1,8 @@
 import argparse
 import os.path
+import platform
 import configparser
+from pathlib import Path
 
 # ------------ Constants ------------ #
 # Settings
@@ -19,8 +21,19 @@ NAME_EPISODE_DELIMITER = '-'
 
 def main(args):
     config = configparser.ConfigParser()
-    configFolderPath = os.path.join(os.getenv('APPDATA'), CONFIG_FOLDER_NAME)
-    configFilePath = os.path.join(os.getenv('APPDATA'), CONFIG_FOLDER_NAME, CONFIG_FILE_NAME)
+
+    operativeSystem = platform.system()
+    if operativeSystem == 'Linux':
+        home = str(Path.home())
+        configFolderPath = os.path.join(home, '.config', CONFIG_FOLDER_NAME)
+        configFilePath = os.path.join(configFolderPath, CONFIG_FILE_NAME)
+    elif operativeSystem == 'Windows':
+        configFolderPath = os.path.join(os.getenv('APPDATA'), CONFIG_FOLDER_NAME)
+        configFilePath = os.path.join(configFolderPath, CONFIG_FILE_NAME)
+    else:
+        print('Operative system not supported')
+        return 1
+
     if os.path.isfile(configFilePath):
         config.read(configFilePath)
         if args.download != None:
@@ -35,7 +48,7 @@ def main(args):
             print('Use -h or --help for the correct usage when running for the first time')
             return 1
 
-        os.mkdir(configFolderPath)
+        os.makedirs(configFolderPath)
         print('Creating config folder in', configFolderPath)
         file = open(configFilePath, 'w')
 
