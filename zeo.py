@@ -82,8 +82,11 @@ def searchForFiles(listOfFiles, save, download):
             atLeastOneFileFound = True
             name = getAnimeName(e)
             createDir(save, name)
-            print('Found anime:', e)
-            os.replace(fullpath, os.path.join(save, name, e))
+            try:
+                os.replace(fullpath, os.path.join(save, name, e))
+                print('Found anime:', e)
+            except PermissionError as error:
+                print('The following anime: ' + e + ' is currently being used by another process. Try again later.')
         elif isFromHorribleSubs(e):
             newPath = os.path.join(download, e)
             listOfFiles = os.listdir(newPath)
