@@ -15,7 +15,10 @@ CONFIG_DOWNLOAD = 'download'
 CONFIG_SAVE = 'save'
 
 # Substrings to look for
-HORRIBLE_SUBS = '[HorribleSubs]'
+GROUP_SUBS = '[Erai-raws]'
+EXTRA_TAIL_TAGS = "[Multiple Subtitles]"
+TAIL_SUBS_EXTRA = '[1080p]' + EXTRA_TAIL_TAGS + '.mkv'
+TAIL_SUBS = '[1080p].mkv'
 NAME_EPISODE_DELIMITER = '-'
 # ----------------------------------- #
 
@@ -78,7 +81,7 @@ def searchForFiles(listOfFiles, save, download):
     atLeastOneFileFound = False
     for e in listOfFiles:
         fullpath = os.path.join(download, e)
-        if os.path.isfile(fullpath) and isFromHorribleSubs(e):
+        if os.path.isfile(fullpath) and isFromGroupSub(e):
             atLeastOneFileFound = True
             name = getAnimeName(e)
             createDir(save, name)
@@ -87,7 +90,7 @@ def searchForFiles(listOfFiles, save, download):
                 print('Found anime:', e)
             except PermissionError as error:
                 print('The following anime: ' + e + ' is currently being used by another process. Try again later.')
-        elif isFromHorribleSubs(e):
+        elif isFromGroupSub(e):
             newPath = os.path.join(download, e)
             listOfFiles = os.listdir(newPath)
             atLeastOneFileFound = searchForFiles(listOfFiles, save, newPath)
@@ -96,16 +99,19 @@ def searchForFiles(listOfFiles, save, download):
     
     return atLeastOneFileFound
 
-# Verify if the file found is from HorribleSubs
-def isFromHorribleSubs(fileName):
-    return True if HORRIBLE_SUBS == fileName[:len(HORRIBLE_SUBS)] else False
+# Verify if the file found is from Group Sub
+def isFromGroupSub(fileName):
+    return True if GROUP_SUBS == fileName[:len(GROUP_SUBS)] else False
 
 # Get only the name of the anime and remove all extra stuff
 def getAnimeName(fileName):
     aux = None
-    # Remove HorribleSubs tag, quality tag and file extension
-    # Change to constants for [1080] and search for the extension separator .
-    aux = fileName[len('[HorribleSubs]') + 1:-12]
+    # Remove Group tag, quality tag and file extension
+    if (fileName.find(EXTRA_TAIL_TAGS, 0, len(fileName)) != -1):
+        aux = fileName[len(GROUP_SUBS) + 1:-len(TAIL_SUBS_EXTRA)]
+    else:
+        aux = fileName[len(GROUP_SUBS) + 1:-len(TAIL_SUBS)]
+        
     index = aux.rfind(NAME_EPISODE_DELIMITER)
     return aux[:index-1]
 
